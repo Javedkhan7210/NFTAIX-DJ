@@ -1,0 +1,17 @@
+{
+  "network": "opbnbTestnet",
+  "chainId": 5611,
+  "deployer": "0x1F4Ee796287bd1d6c5336F18bFaE81d02aAa252f",
+  "usdt": "0xCFBd8863f4DdB18bAeF44F3f1feE65F37C97bb8a",
+  "registration": "0xEBab599718b730f8570B0996212121d84f212bA8",
+  "marketplace": "0x8Cc88a0051C059dF5178a37fa7573AdBf94e7d01",
+  "rewards": "0xEF0421Cb6c949b8ADDb668c3fE211f939101528F",
+  "globalPool": "0x68c459D3Dd172919e8401d17F95f064a2a826d03",
+  "treasury": "0xDA1d895bbEA1c43032Ac3325794CaD893beEB711",
+  "liquidityManager": "0xA2f59CB5b13565a78F775D5A50b1883C1Ec15a50",
+  "notes": "MockUSDT with public mint() for testnet signup faucet; marketplace redeployed with buy() auto-list + queueAt/sellerOf; marketplace redeployed with buy() auto-list + queueAt/sellerOf; marketplace redeployed with buy() auto-list + queueAt/sellerOf; Registration+Marketplace+NFTAIXToken (1M, 2/USDT) with hold rules + registerAndActivate; Registration direct referral/network pay (no Rewards hold on activate); marketplace redeployed — seller/team direct USDT pay (global pool still periodic); marketplace redeployed — appreciation-only profit split (+10% slice); seller gets cost back + profit share",
+  "marketplacePrev": "0x6c7E9EeC9fD5C6D0BD44f53107bB222BfD210e06",
+  "redeployedAt": "2026-08-16T21:50:40.279Z",
+  "registrationPrev": "0x77Cca6CC60de9084E23159123bE8b0A179E4C322",
+  "nftaixToken": "0xA53d4e9849425b3c0878759C4CE77AeE3f52554F"
+}

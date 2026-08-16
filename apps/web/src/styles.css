@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-top: #000000;
+  --bg-bottom: #05070d;
+  --card-fill: #0b0f1a;
+  /* Brand neon: electric cyan → violet → magenta (NFTaix wordmark) */
+  --neon-cyan: #00ffff;
+  --neon-violet: #a855f7;
+  --neon-pink: #ff00ff;
+  --text-main: #f4f7ff;
+  --text-sub: #8b9bb4;
+  --positive: #22e6a0;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  color: var(--text-main);
+  background-color: #02040f;
+  background-image: url("/bg-mobile.png");
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+
+/* Admin panel should use a clean solid backdrop, not landing/user wallpaper images. */
+body.admin-page {
+  background-image: none !important;
+  background-color: #060812;
+}
+
+@media (min-width: 768px) {
+  body {
+    background-image: url("/bg-desktop.png");
+    background-position: center;
+  }
+}
+
+#root {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Primary in-app scroll: iOS momentum + vertical pan only */
+.app-main-scroll {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: auto;
+}
+
+/* Exact neon border pattern from spec */
+.neon-card {
+  border-radius: 24px;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#0b0f1a, #0b0f1a) padding-box,
+    linear-gradient(90deg, #00ffff, #a855f7, #ff00ff) border-box;
+  /* box-shadow:
+    0 0 14px rgba(0, 209, 255, 0.22),
+    0 0 28px rgba(138, 46, 255, 0.18),
+    0 0 22px rgba(255, 47, 209, 0.14),
+    0 18px 44px rgba(0, 0, 0, 0.5); */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.neon-card--inner {
+  background:
+    linear-gradient(155deg, rgba(14, 18, 32, 0.94) 0%, rgba(8, 11, 22, 0.92) 100%) padding-box,
+    linear-gradient(90deg, #242264, #3e3aa0, #1b152d) border-box;
+}
+
+.logo-neon {
+  background: linear-gradient(180deg, #e8ffff 0%, #00ffff 35%, #a855f7 65%, #ff00ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 14px rgba(168, 85, 247, 0.55)) drop-shadow(0 0 22px rgba(0, 255, 255, 0.35));
+}
+
+.label-caps {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--text-sub);
+  text-transform: uppercase;
+}
+
+.btn-neon-fill {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(90deg, #1a3a5c, #5b21b6, #86198f);
+  color: #fff;
+  /* box-shadow:
+    0 0 14px rgba(0, 209, 255, 0.35),
+    0 0 26px rgba(138, 46, 255, 0.28),
+    0 0 20px rgba(255, 47, 209, 0.2); */
+}
+
+.btn-neon-ghost {
+  border-radius: 18px;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(160deg, rgba(12, 16, 30, 0.95), rgba(8, 10, 20, 0.92)) padding-box,
+    linear-gradient(90deg, #00ffff66, #a855f766, #ff00ff66) border-box;
+  color: var(--text-main);
+  /* box-shadow:
+    0 0 10px rgba(0, 209, 255, 0.12),
+    0 0 18px rgba(138, 46, 255, 0.1); */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.icon-pill {
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03)) padding-box,
+    linear-gradient(90deg, #00ffff55, #a855f755, #ff00ff55) border-box;
+  box-shadow:
+    0 0 12px rgba(0, 255, 255, 0.22),
+    inset 0 0 14px rgba(168, 85, 247, 0.08);
+}
+
+.nav-dock {
+  border-radius: 22px;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(180deg, rgba(10, 14, 26, 0.92), rgba(6, 8, 16, 0.94)) padding-box,
+    linear-gradient(90deg, rgba(0, 255, 255, 0.35), rgba(168, 85, 247, 0.3), rgba(255, 0, 255, 0.35))
+      border-box;
+  box-shadow:
+    0 -2px 0 rgba(0, 255, 255, 0.1),
+    0 0 24px rgba(168, 85, 247, 0.18),
+    0 12px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+}
+
+.tab-pill {
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-sub);
+  transition: color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.tab-pill:focus {
+  outline: none;
+}
+
+.tab-pill:focus-visible {
+  outline: 2px solid rgba(138, 46, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.tab-pill--active {
+  color: #fff;
+  background: linear-gradient(90deg, #1a3a5c, #5b21b6, #86198f);
+  box-shadow: none;
+}
+
+.badge-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--positive);
+  background: rgba(34, 230, 160, 0.12);
+  border: 1px solid rgba(34, 230, 160, 0.25);
+  box-shadow: 0 0 12px rgba(34, 230, 160, 0.15);
+}
+
+.header-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.header-icon-btn:hover {
+  border-color: rgba(0, 255, 255, 0.4);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.copy-chip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

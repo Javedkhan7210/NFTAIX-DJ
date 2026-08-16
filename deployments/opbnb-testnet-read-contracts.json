@@ -1,0 +1,143 @@
+{
+  "network": "opBNB Testnet",
+  "chainId": 5611,
+  "rpcUrl": "https://opbnb-testnet-rpc.bnbchain.org",
+  "explorerUrl": "https://testnet.opbnbscan.com",
+  "verifiedAt": "2026-08-17",
+  "deployer": "0x1F4Ee796287bd1d6c5336F18bFaE81d02aAa252f",
+  "rootSponsor": "0x1F4Ee796287bd1d6c5336F18bFaE81d02aAa252f",
+  "usdtDecimals": 18,
+  "addresses": {
+    "usdt": "0xCFBd8863f4DdB18bAeF44F3f1feE65F37C97bb8a",
+    "registration": "0xEBab599718b730f8570B0996212121d84f212bA8",
+    "marketplace": "0x8Cc88a0051C059dF5178a37fa7573AdBf94e7d01",
+    "nftaixToken": "0xA53d4e9849425b3c0878759C4CE77AeE3f52554F",
+    "rewards": "0xEF0421Cb6c949b8ADDb668c3fE211f939101528F",
+    "globalPool": "0x68c459D3Dd172919e8401d17F95f064a2a826d03",
+    "treasury": "0xDA1d895bbEA1c43032Ac3325794CaD893beEB711",
+    "liquidityManager": "0xA2f59CB5b13565a78F775D5A50b1883C1Ec15a50"
+  },
+  "readAbi": {
+    "erc20": [
+      "function name() view returns (string)",
+      "function symbol() view returns (string)",
+      "function decimals() view returns (uint8)",
+      "function totalSupply() view returns (uint256)",
+      "function balanceOf(address account) view returns (uint256)",
+      "function allowance(address owner, address spender) view returns (uint256)"
+    ],
+    "registration": [
+      "function users(address account) view returns (bool registered, bool activated, bool permanentlyInactive, address sponsor, uint8 packageId, uint256 tradingLimit, uint256 activatedAt, uint256 lastUpgradeAt, uint256 directCount)",
+      "function packages(uint8 packageId) view returns (uint256 price, uint256 tradingLimit, bool exists)",
+      "function dailyVolume(address user, uint256 day) view returns (uint256)",
+      "function lastTradeDay(address user) view returns (uint256)",
+      "function currentDay() view returns (uint256)",
+      "function requiredDailyVolume(address user) view returns (uint256)",
+      "function isCompliant(address user, uint256 day) view returns (bool)",
+      "function daysSinceLastTrade(address user) view returns (uint256)",
+      "function shouldDeactivate(address user) view returns (bool)",
+      "function getDirectReferrals(address user) view returns (address[])",
+      "function teamSize(address user) view returns (uint256)",
+      "function levelsForDirects(uint256 directs) view returns (uint256)",
+      "function nftLevelsForDirects(uint256 directs) view returns (uint256)",
+      "function rootSponsor() view returns (address)",
+      "function usdt() view returns (address)",
+      "function platformToken() view returns (address)",
+      "function owner() view returns (address)",
+      "function isAuthorizer(address account) view returns (bool)",
+      "function isVolumeRecorder(address account) view returns (bool)",
+      "function directBps() view returns (uint16)",
+      "function networkBps() view returns (uint16)",
+      "function requiredVolumeBps() view returns (uint16)",
+      "function inactiveDays() view returns (uint256)",
+      "function paused() view returns (bool)"
+    ],
+    "marketplace": [
+      "function queueLength() view returns (uint256)",
+      "function peekNext() view returns (uint256 tokenId, uint256 price)",
+      "function queueAt(uint256 index) view returns (uint256 tokenId, uint256 price, address seller)",
+      "function sellerOf(uint256 tokenId) view returns (address)",
+      "function nextListPrice() view returns (uint256)",
+      "function mintPrice() view returns (uint256)",
+      "function burnThreshold() view returns (uint256)",
+      "function appreciationBps() view returns (uint16)",
+      "function heldTokenId(address user) view returns (uint256)",
+      "function holdPaidPrice(uint256 tokenId) view returns (uint256)",
+      "function listPrice(uint256 tokenId) view returns (uint256)",
+      "function listed(uint256 tokenId) view returns (bool)",
+      "function botEnabled(address user) view returns (bool)",
+      "function isBot(address account) view returns (bool)",
+      "function usdt() view returns (address)",
+      "function registration() view returns (address)",
+      "function owner() view returns (address)",
+      "function paused() view returns (bool)",
+      "function balanceOf(address owner) view returns (uint256)",
+      "function ownerOf(uint256 tokenId) view returns (address)"
+    ],
+    "nftaixToken": [
+      "function name() view returns (string)",
+      "function symbol() view returns (string)",
+      "function decimals() view returns (uint8)",
+      "function totalSupply() view returns (uint256)",
+      "function balanceOf(address account) view returns (uint256)",
+      "function MAX_SUPPLY() view returns (uint256)",
+      "function TOKENS_PER_USDT() view returns (uint256)",
+      "function isDistributor(address account) view returns (bool)",
+      "function owner() view returns (address)"
+    ],
+    "rewards": [
+      "function usdt() view returns (address)",
+      "function registration() view returns (address)",
+      "function treasury() view returns (address)",
+      "function owner() view returns (address)",
+      "function currentDay() view returns (uint256)",
+      "function pending(address user, uint256 day) view returns (uint256)",
+      "function settled(address user, uint256 day) view returns (bool)",
+      "function isCreditor(address account) view returns (bool)"
+    ],
+    "globalPool": [
+      "function usdt() view returns (address)",
+      "function registration() view returns (address)",
+      "function treasury() view returns (address)",
+      "function owner() view returns (address)",
+      "function currentDay() view returns (uint256)",
+      "function dayPool(uint256 day) view returns (uint256)",
+      "function dayDistributed(uint256 day) view returns (bool)",
+      "function isCreditor(address account) view returns (bool)"
+    ],
+    "treasury": [
+      "function usdt() view returns (address)",
+      "function burnWallet() view returns (address)",
+      "function owner() view returns (address)",
+      "function totalBurned() view returns (uint256)",
+      "function totalNftsBurned() view returns (uint256)",
+      "function isOperator(address account) view returns (bool)"
+    ],
+    "liquidityManager": [
+      "function usdt() view returns (address)",
+      "function liquidityWallet() view returns (address)",
+      "function owner() view returns (address)",
+      "function totalReceived() view returns (uint256)",
+      "function totalForwarded() view returns (uint256)",
+      "function isOperator(address account) view returns (bool)"
+    ]
+  },
+  "events": {
+    "registration": [
+      "event Registered(address indexed user, address indexed sponsor)",
+      "event Activated(address indexed user, uint8 indexed packageId, uint256 price, uint256 tradingLimit)",
+      "event Upgraded(address indexed user, uint8 indexed oldPackageId, uint8 indexed newPackageId, uint256 price, uint256 tradingLimit)",
+      "event VolumeRecorded(address indexed user, uint256 indexed day, uint256 amount, uint256 dayTotal)"
+    ],
+    "marketplace": [
+      "event Purchased(address indexed buyer, uint256 indexed tokenId, uint256 price)",
+      "event Listed(uint256 indexed tokenId, uint256 price)",
+      "event Held(address indexed user, uint256 indexed tokenId)",
+      "event NftBurned(uint256 indexed tokenId, uint256 price)"
+    ],
+    "nftaixToken": [
+      "event PackageTokensDistributed(address indexed to, uint256 usdtAmount, uint256 tokenAmount)"
+    ]
+  },
+  "updatedAt": "2026-08-16T21:50:40.287Z"
+}
