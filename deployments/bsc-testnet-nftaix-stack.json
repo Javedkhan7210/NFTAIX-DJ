@@ -1,0 +1,12 @@
+{
+  "network": "bscTestnet",
+  "chainId": 97,
+  "deployer": "0x1F4Ee796287bd1d6c5336F18bFaE81d02aAa252f",
+  "usdt": "0xD5D02C171cB80e2Fb7E79EcA196F05be1070b5e0",
+  "registration": "0x94F9D6172f50F8e83BcFaAAf96Cc81911E35BdaB",
+  "marketplace": "0xc84a145a32DD088288153e6aDD0BA0935e52DefF",
+  "rewards": "0xA6F2fBDf1cf91b161f2F9Cc440Cd55470630aC65",
+  "globalPool": "0xC403151c03E548e209e8edE6C0824aB352FEe7b0",
+  "treasury": "0x05A449e067B9F486262a3ca54B03dde183f5f1B8",
+  "liquidityManager": "0xb22BEa86ed7990471BB2aFBA544c1Ebb06914C73"
+}
