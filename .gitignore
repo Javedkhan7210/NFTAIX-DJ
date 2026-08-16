@@ -1,0 +1,17 @@
+node_modules
+cache
+artifacts
+coverage
+coverage.json
+typechain
+typechain-types
+!.env.example
+*.bak
+.DS_Store
+apps/api/dist/
+apps/web/dist/
+apps/api/backups/
+config.bat
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

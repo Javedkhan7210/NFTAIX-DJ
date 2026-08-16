@@ -1,0 +1,614 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  user
+  admin
+  superadmin
+}
+
+enum IncomeStatus {
+  locked
+  unlocked
+  burned
+}
+
+enum IncomeType {
+  direct
+  network
+  level
+  team
+  global_pool
+  nft
+  other
+}
+
+enum TradingComplianceStatus {
+  compliant
+  non_compliant
+  inactive
+}
+
+enum GlobalRank {
+  prime_member
+  elite_builder
+  royal_leader
+  global_director
+  crown_ambassador
+}
+
+enum GlobalPoolRunStatus {
+  pending
+  distributing
+  completed
+  failed
+}
+
+model User {
+  id                    String                    @id @default(cuid())
+  publicUserNumber      Int                       @unique @default(autoincrement())
+  email                 String?                   @unique
+  passwordHash          String?
+  referralCode          String                    @unique
+  role                  Role                      @default(user)
+  sponsorId             String?
+  sponsor               User?                     @relation("UserSponsor", fields: [sponsorId], references: [id])
+  directs               User[]                    @relation("UserSponsor")
+  directReferralCount   Int                       @default(0)
+  teamCount             Int                       @default(0)
+  isActive              Boolean                   @default(true)
+  inactiveSince         DateTime?
+  /** When set, user is blocked from normal access (admin-set); optional detail for support. */
+  blockedReason         String?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  walletConnections     WalletConnection[]
+  packageActivations    PackageActivation[]
+  tradingLogs           TradingLog[]
+  dailyCompliance       DailyTradingCompliance[]
+  incomes               IncomeLedger[]
+  nftRecords            NFTRecord[]
+  nftOwnershipFrom      NftOwnershipHistory[] @relation("NftOwnershipFrom")
+  nftOwnershipTo        NftOwnershipHistory[] @relation("NftOwnershipTo")
+  nftBurnsAsBuyer       NftBurnHistory[]       @relation("NftBurnBuyer")
+  nftSplitsAsBuyer      NftSplitHistory[]      @relation("NftSplitBuyer")
+  rankHistory           RankHistory[]
+  burnLogs              BurnLog[]
+  liquidityLogs         LiquidityLog[]
+  adminLogs             AdminLog[]                @relation("AdminActor")
+  airdropRuns           AirdropRun[]             @relation("AirdropActor")
+  refreshTokens         RefreshToken[]
+  custodialUsdtBalance  Decimal      @default(0) @db.Decimal(18, 2)
+  /** When true, the server applies daily trading volume toward compliance automatically (same rules as manual/NFT logs). */
+  autoTradeBotEnabled   Boolean      @default(false)
+  usdtLedger            UsdtLedger[]
+  /** Set when account was created after on-chain RegistrationHub payment (decentralized signup). */
+  registrationTxHash    String?      @unique
+  nftSaleTradingIncomes NftSaleTradingIncome[]
+  nftSaleLevelIncomes   NftSaleLevelIncome[]
+  packageIncomeMetrics  UserPackageIncomeMetrics?
+  botPurchaseAttempts   BotPurchaseAttempt[]
+
+  @@index([sponsorId])
+}
+
+enum BotPurchaseRunStatus {
+  running
+  completed
+  failed
+}
+
+enum BotPurchaseAttemptStatus {
+  success
+  failed
+  skipped
+}
+
+/** One sequential resale-bot execution (cron or admin trigger). */
+model BotPurchaseRun {
+  id          String               @id @default(cuid())
+  status      BotPurchaseRunStatus @default(running)
+  trigger     String
+  triggeredBy String?
+  startedAt   DateTime             @default(now())
+  finishedAt  DateTime?
+  summary     Json?
+  attempts    BotPurchaseAttempt[]
+
+  @@index([startedAt])
+}
+
+/** One purchase attempt within a bot run (admin manual may record several per user). */
+model BotPurchaseAttempt {
+  id                  String                   @id @default(cuid())
+  runId               String
+  userId              String
+  sortOrder           Int
+  walletAddress       String?
+  targetRemainingUsdt Decimal                  @db.Decimal(18, 2)
+  balanceUsdt         Decimal                  @db.Decimal(18, 2)
+  budgetUsdt          Decimal                  @db.Decimal(18, 2)
+  tokenId             String?
+  effectivePayUsdt    Decimal?                 @db.Decimal(18, 6)
+  status              BotPurchaseAttemptStatus
+  failureReason       String?
+  chainTxHash         String?
+  createdAt           DateTime                 @default(now())
+  run                 BotPurchaseRun           @relation(fields: [runId], references: [id], onDelete: Cascade)
+  user                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, sortOrder])
+  @@index([runId, sortOrder])
+  @@index([userId])
+}
+
+/** Cached package economics: buy volume vs held NFT value → derived income quotes (recomputed when logs/NFTs change). */
+model UserPackageIncomeMetrics {
+  userId                   String   @id
+  buyVolumeUsdt            Decimal  @db.Decimal(18, 2)
+  holdNftAmountUsdt        Decimal  @db.Decimal(18, 6)
+  totalSpentUsdt           Decimal  @db.Decimal(18, 6)
+  incomeUsdt               Decimal  @db.Decimal(18, 6)
+  tradingIncomeDerivedUsdt Decimal  @db.Decimal(18, 6)
+  updatedAt                DateTime @updatedAt
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UsdtLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Decimal  @db.Decimal(18, 2)
+  reason    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model WalletConnection {
+  id               String   @id @default(cuid())
+  userId           String
+  chain            String
+  walletAddress    String   @unique
+  isPrimary        Boolean  @default(false)
+  blocked          Boolean  @default(false)
+  connectedAt      DateTime @default(now())
+  lastSignatureAt  DateTime?
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Singleton CMS document for user app dashboard (banners, slides, social links, etc.). Use id `default`.
+model SiteContent {
+  id        String   @id
+  payload   Json
+  updatedAt DateTime @updatedAt
+}
+
+model WalletAuthNonce {
+  id        String   @id @default(cuid())
+  address   String
+  nonce     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([address])
+  @@index([expiresAt])
+}
+
+model PackageTier {
+  id                String              @id @default(cuid())
+  name              String              @unique
+  activationAmount  Decimal             @db.Decimal(18, 2)
+  tradingLimit      Decimal             @db.Decimal(18, 2)
+  isBaseEntry       Boolean             @default(false)
+  sortOrder         Int                 @default(0)
+  isActive          Boolean             @default(true)
+  activations       PackageActivation[]
+}
+
+model PackageActivation {
+  id                String               @id @default(cuid())
+  userId            String
+  tierId            String
+  activatedAt       DateTime             @default(now())
+  expiresAt         DateTime?
+  isCurrent         Boolean              @default(true)
+  /** When set (admin reset), only `TradingLog` rows with tradeDate >= this count toward package/daily caps. */
+  tradingVolumeSince DateTime?
+  /** Set when activation is recorded from an on-chain SubscriptionHub tx. */
+  chainTxHash       String?
+  onChain           Boolean              @default(false)
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier              PackageTier          @relation(fields: [tierId], references: [id])
+  tradingLogs       TradingLog[]
+  @@index([chainTxHash])
+}
+
+model UpgradeEligibilityLog {
+  id                  String   @id @default(cuid())
+  userId              String
+  fromTierAmount      Decimal  @db.Decimal(18, 2)
+  toTierAmount        Decimal  @db.Decimal(18, 2)
+  requiredDays        Int
+  meetsDuration       Boolean
+  meetsTradingRule    Boolean
+  evaluatedAt         DateTime @default(now())
+}
+
+model ReferralEdge {
+  id          String   @id @default(cuid())
+  sponsorId   String
+  referralId  String
+  level       Int
+  createdAt   DateTime @default(now())
+
+  @@index([sponsorId])
+  @@index([referralId])
+  @@index([sponsorId, level])
+}
+
+model TradingLog {
+  id                   String            @id @default(cuid())
+  userId               String
+  packageActivationId  String
+  tradeDate            DateTime
+  volume               Decimal           @db.Decimal(18, 2)
+  allowedDailyVolume   Decimal           @db.Decimal(18, 2)
+  chainTxHash          String?
+  relatedTokenId       String?
+  createdAt            DateTime          @default(now())
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageActivation    PackageActivation @relation(fields: [packageActivationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chainTxHash, relatedTokenId])
+  @@index([chainTxHash])
+  @@index([relatedTokenId])
+}
+
+model DailyTradingCompliance {
+  id               String                  @id @default(cuid())
+  userId           String
+  day              DateTime
+  requiredVolume   Decimal                 @db.Decimal(18, 2)
+  achievedVolume   Decimal                 @db.Decimal(18, 2)
+  status           TradingComplianceStatus
+  consecutiveMiss  Int                     @default(0)
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+}
+
+model IncomeLedger {
+  id           String        @id @default(cuid())
+  userId       String
+  sourceUserId String?
+  incomeType   IncomeType    @default(other)
+  amount       Decimal       @db.Decimal(18, 6)
+  status       IncomeStatus  @default(locked)
+  lockedUntil  DateTime
+  globalPoolId String?
+  chainTxHash  String?
+  createdAt    DateTime      @default(now())
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  globalPool   GlobalPool?   @relation(fields: [globalPoolId], references: [id], onDelete: SetNull)
+  logs         IncomeLog[]
+
+  @@index([userId, status])
+  @@index([lockedUntil])
+  @@index([globalPoolId])
+  @@index([chainTxHash])
+  @@unique([globalPoolId, userId])
+}
+
+model IncomeLog {
+  id         String        @id @default(cuid())
+  incomeId   String
+  fromStatus IncomeStatus?
+  toStatus   IncomeStatus
+  reason     String?
+  createdAt  DateTime      @default(now())
+  income     IncomeLedger  @relation(fields: [incomeId], references: [id], onDelete: Cascade)
+
+  @@index([incomeId])
+}
+
+model RewardSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model TokenDistributionLog {
+  id                String   @id @default(cuid())
+  userId            String
+  activationId      String
+  directSponsorPct  Decimal  @db.Decimal(5, 2)
+  networkPct        Decimal  @db.Decimal(5, 2)
+  creatorPct        Decimal  @db.Decimal(5, 2)
+  burnPct           Decimal  @db.Decimal(5, 2)
+  liquidityPct      Decimal  @db.Decimal(5, 2)
+  globalPct         Decimal  @db.Decimal(5, 2)
+  createdAt         DateTime @default(now())
+}
+
+model NFTRecord {
+  id           String    @id @default(cuid())
+  userId       String
+  tokenId      String    @unique
+  baseValue    Decimal   @db.Decimal(18, 6)
+  currentValue Decimal   @db.Decimal(18, 6)
+  isBurned     Boolean   @default(false)
+  mintedAt     DateTime  @default(now())
+  burnedAt     DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/** Indexed resale / max-price purchase: ownership change (buyer receives or burns-at-max in same tx). */
+model NftOwnershipHistory {
+  id          String   @id @default(cuid())
+  chainId     Int
+  txHash      String
+  logIndex    Int
+  tokenId     String
+  fromUserId  String?
+  toUserId    String
+  fromWallet  String
+  toWallet    String
+  priceUsdt   Decimal  @db.Decimal(18, 6)
+  /** `resale` = normal secondary; `max_price_burn` = purchase at max price (token burned, split follows). */
+  kind        String   @default("resale")
+  createdAt   DateTime @default(now())
+  fromUser    User?    @relation("NftOwnershipFrom", fields: [fromUserId], references: [id], onDelete: SetNull)
+  toUser      User     @relation("NftOwnershipTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([chainId, txHash, logIndex])
+  @@index([tokenId, createdAt])
+  @@index([toUserId, createdAt])
+}
+
+/** Token burned at max sale price (same tx as `NftSplitHistory` when children are minted). */
+model NftBurnHistory {
+  id                   String   @id @default(cuid())
+  chainId              Int
+  txHash               String
+  logIndex             Int
+  tokenId              String
+  buyerUserId          String?
+  buyerWallet          String
+  previousOwnerWallet  String
+  salePriceUsdt        Decimal  @db.Decimal(18, 6)
+  createdAt            DateTime @default(now())
+  buyerUser            User?    @relation("NftBurnBuyer", fields: [buyerUserId], references: [id], onDelete: SetNull)
+
+  @@unique([chainId, txHash, logIndex])
+  @@index([tokenId])
+  @@index([buyerUserId])
+}
+
+/** After max-price burn: child token ids minted to marketplace for the buyer (same transaction). */
+model NftSplitHistory {
+  id            String   @id @default(cuid())
+  chainId       Int
+  txHash        String
+  parentTokenId String
+  buyerUserId   String?
+  buyerWallet   String
+  childTokenIds Json
+  createdAt     DateTime @default(now())
+  buyerUser     User?    @relation("NftSplitBuyer", fields: [buyerUserId], references: [id], onDelete: SetNull)
+
+  @@unique([chainId, txHash])
+  @@index([parentTokenId])
+  @@index([buyerUserId])
+}
+
+/**
+ * One row per successful indexed NFT resale (`placeOrderEmit` log). Unique (chainId, txHash, logIndex)
+ * ensures trading income is granted at most once; `profitCalculated` is set when the row is inserted.
+ */
+model NftSaleTradingIncome {
+  id                String   @id @default(cuid())
+  chainId           Int
+  txHash            String
+  logIndex          Int
+  tokenId           String
+  sellerUserId      String
+  buyerUserId       String?
+  purchasePriceUsdt Decimal  @db.Decimal(18, 6)
+  salePriceUsdt     Decimal  @db.Decimal(18, 6)
+  profitUsdt        Decimal  @db.Decimal(18, 6)
+  tradingIncomeUsdt Decimal  @db.Decimal(18, 6)
+  /** Percent of `profitUsdt` credited as app trading income (default 30; override via RewardSetting `nft.tradingIncomeProfitSharePct`). */
+  profitSharePct    Int      @default(30)
+  profitCalculated  Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  seller            User     @relation(fields: [sellerUserId], references: [id], onDelete: Cascade)
+
+  @@unique([chainId, txHash, logIndex])
+  @@index([sellerUserId, createdAt])
+}
+
+/**
+ * One row per matrix `SaleLevelDistribute` log on NFT resale (upline share of the 20% level pool).
+ * Unique (chainId, txHash, logIndex) — same tx emits up to 15 level rows.
+ */
+model NftSaleLevelIncome {
+  id              String   @id @default(cuid())
+  chainId         Int
+  txHash          String
+  logIndex        Int
+  tokenId         String
+  treeLine        Int
+  amountUsdt      Decimal  @db.Decimal(18, 6)
+  recipientWallet String
+  recipientUserId String?
+  sellerWallet    String?
+  createdAt       DateTime @default(now())
+  recipientUser   User?    @relation(fields: [recipientUserId], references: [id], onDelete: SetNull)
+
+  @@unique([chainId, txHash, logIndex])
+  @@index([recipientUserId, createdAt])
+  @@index([tokenId])
+}
+
+/// Catalog rows for the in-app NFT marketplace (each row has a stable API id + unique display token #).
+model MarketNftListing {
+  id          String   @id @default(cuid())
+  tokenNumber Int      @unique
+  name        String
+  tier        String
+  priceUsdt   Decimal  @db.Decimal(18, 2)
+  imageFile   String
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RankRule {
+  id                 String     @id @default(cuid())
+  rank               GlobalRank @unique
+  minDirectReferrals Int
+  minTeamSize        Int
+  globalPoolSharePct Decimal    @db.Decimal(5, 2)
+}
+
+model RankHistory {
+  id         String     @id @default(cuid())
+  userId     String
+  rank       GlobalRank
+  achievedAt DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GlobalPool {
+  id                String                  @id @default(cuid())
+  day               DateTime
+  totalAmount       Decimal                 @db.Decimal(18, 6)
+  distributedAmount Decimal                 @default(0) @db.Decimal(18, 6)
+  status            GlobalPoolRunStatus     @default(pending)
+  metadata          Json?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  distributions     GlobalPoolDistribution[]
+  incomeLedgers     IncomeLedger[]
+  burnLogs          BurnLog[]
+
+  @@index([day])
+  @@index([status])
+}
+
+model GlobalPoolDistribution {
+  id           String     @id @default(cuid())
+  globalPoolId String
+  rank         GlobalRank
+  amount       Decimal    @db.Decimal(18, 6)
+  createdAt    DateTime   @default(now())
+  globalPool   GlobalPool @relation(fields: [globalPoolId], references: [id], onDelete: Cascade)
+
+  @@index([globalPoolId])
+}
+
+model BurnLog {
+  id           String      @id @default(cuid())
+  userId       String
+  amount       Decimal     @db.Decimal(18, 6)
+  reason       String
+  chainTxHash  String?
+  globalPoolId String?
+  createdAt    DateTime    @default(now())
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  globalPool   GlobalPool? @relation(fields: [globalPoolId], references: [id], onDelete: SetNull)
+
+  @@index([globalPoolId])
+}
+
+model LiquidityLog {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Decimal  @db.Decimal(18, 6)
+  source      String
+  chainTxHash String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdminLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  targetType String
+  targetId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  actor      User     @relation("AdminActor", fields: [actorId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Last successfully processed block per EVM chain (for log indexer).
+model ChainSyncState {
+  chainId   Int    @id
+  lastBlock BigInt
+  updatedAt DateTime @updatedAt
+}
+
+/// Idempotent store of processed chain logs for audit and replays.
+model ChainEvent {
+  id          String   @id @default(cuid())
+  chainId     Int
+  blockNumber BigInt
+  logIndex    Int
+  txHash      String
+  contract    String
+  eventName   String
+  payload     Json
+  processedAt DateTime @default(now())
+
+  @@unique([chainId, txHash, logIndex])
+  @@index([eventName, blockNumber])
+  @@index([txHash])
+}
+
+/// Audit trail for admin-initiated ERC20 airdrops (on-chain transfers).
+model AirdropRun {
+  id               String              @id @default(cuid())
+  chainId          Int
+  tokenAddress     String
+  actorId          String
+  recipientCount   Int
+  totalAmountWei   String
+  createdAt        DateTime            @default(now())
+  actor            User                @relation("AirdropActor", fields: [actorId], references: [id])
+  transfers        AirdropTransfer[]
+}
+
+model AirdropTransfer {
+  id         String     @id @default(cuid())
+  runId      String
+  toAddress  String
+  amountWei  String
+  txHash     String?
+  createdAt  DateTime   @default(now())
+  run        AirdropRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}

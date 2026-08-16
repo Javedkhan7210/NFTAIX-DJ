@@ -1,0 +1,17 @@
+{
+  "name": "NFTaix",
+  "short_name": "NFTaix",
+  "description": "AI-ready NFT marketplace, trading, rewards, and on-chain automation on opBNB.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
