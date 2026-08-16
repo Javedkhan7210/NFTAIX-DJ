@@ -1,0 +1,55 @@
+{
+  "name": "@platform/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "dev:worker": "tsx watch src/worker.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:reset": "prisma migrate reset",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "admin:create-user": "tsx scripts/create-admin-user.ts",
+    "lint": "echo \"lint not configured\"",
+    "test": "tsx src/modules/rewards/reward-engine.service.test.ts && tsx src/modules/packages/package-eligibility.service.test.ts && tsx src/modules/trading/resale-bot-keeper.purchase-logic.test.ts && tsx src/modules/ranks/global-pool-compliance.test.ts && tsx src/modules/ranks/global-pool-burn-payout.test.ts",
+    "test:global-pool": "GLOBAL_POOL_ONCHAIN_PAYOUT_ENABLED=false tsx scripts/test-global-pool-run.ts",
+    "mainnet:global-pool-readiness": "tsx scripts/mainnet-global-pool-readiness.ts",
+    "auto-trade:once": "tsx scripts/run-auto-trade-keeper-once.ts",
+    "resale-bot:once": "tsx scripts/run-sequential-resale-bot-once.ts",
+    "admin:reset-all-daily-and-trade": "tsx scripts/reset-all-daily-limits-and-run-bot.ts",
+    "chain:catchup": "tsx scripts/run-chain-indexer-catchup.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.7.0",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^5.34.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-async-errors": "^3.1.1",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "pino": "^9.4.0",
+    "viem": "^2.21.54",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.7.4",
+    "prisma": "^6.7.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}

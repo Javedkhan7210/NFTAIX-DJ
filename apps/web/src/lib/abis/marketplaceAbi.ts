@@ -1,0 +1,38 @@
+import { parseAbi } from "viem";
+
+/** NFTAIX NFTMarketplace (ERC721 + FIFO). */
+export const marketplaceAbi = parseAbi([
+  "function buy()",
+  "function botBuy(address user)",
+  "function runBot(address user, uint256 maxTrades)",
+  "function adminMintToQueue(uint256 quantity)",
+  "function adminBurnToken(uint256 tokenId)",
+  "function listHeld()",
+  "function setUserBot(address user, bool enabled)",
+  "function botEnabled(address user) view returns (bool)",
+  "function isBot(address account) view returns (bool)",
+  "function peekNext() view returns (uint256 tokenId, uint256 price)",
+  "function queueLength() view returns (uint256)",
+  "function queueAt(uint256 index) view returns (uint256 tokenId, uint256 price, address seller)",
+  "function sellerOf(uint256 tokenId) view returns (address)",
+  "function nextListPrice() view returns (uint256)",
+  "function mintPrice() view returns (uint256)",
+  "function burnThreshold() view returns (uint256)",
+  "function heldTokenId(address user) view returns (uint256)",
+  "function listPrice(uint256 tokenId) view returns (uint256)",
+  "function listed(uint256 tokenId) view returns (bool)",
+  "function usdt() view returns (address)",
+  "function registration() view returns (address)",
+  "function paused() view returns (bool)",
+  "function ownerOf(uint256 tokenId) view returns (address)",
+  "event Purchased(address indexed buyer, uint256 indexed tokenId, uint256 price)",
+  "event Listed(uint256 indexed tokenId, uint256 price)",
+  "event Held(address indexed user, uint256 indexed tokenId)",
+  "error InvalidAddress()",
+  "error NotActivated()",
+  "error PermanentlyInactive()",
+  "error DailyLimitExceeded()",
+  "error NotBot()",
+  "error BotDisabled()",
+  "error InvalidSplit()"
+]);
